@@ -74,7 +74,9 @@ class SpringApplicationBannerPrinter {
 
 	private Banner getBanner(Environment environment) {
 		Banners banners = new Banners();
+		// 根据环境对象获取图片形式的banner.
 		banners.addIfNotNull(getImageBanner(environment));
+		// 根据环境对象获取文本形式的banner,如果没有则取classpath:banner.txt文件的内容
 		banners.addIfNotNull(getTextBanner(environment));
 		if (banners.hasAtLeastOneBanner()) {
 			return banners;
@@ -82,6 +84,7 @@ class SpringApplicationBannerPrinter {
 		if (this.fallbackBanner != null) {
 			return this.fallbackBanner;
 		}
+		// 如果没有设置,则使用默认的banner(spring-boot).
 		return DEFAULT_BANNER;
 	}
 

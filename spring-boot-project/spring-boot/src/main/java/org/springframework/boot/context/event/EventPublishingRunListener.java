@@ -49,13 +49,16 @@ public class EventPublishingRunListener implements SpringApplicationRunListener,
 
 	private final String[] args;
 
+	// 存储通过spring.factories获取到的全部监听器集合.
 	private final SimpleApplicationEventMulticaster initialMulticaster;
 
 	public EventPublishingRunListener(SpringApplication application, String[] args) {
 		this.application = application;
 		this.args = args;
 		this.initialMulticaster = new SimpleApplicationEventMulticaster();
+		// 将spring.factories获取到的监听器集合存入initialMulticaster中.
 		for (ApplicationListener<?> listener : application.getListeners()) {
+			// 此处如果监听器对象为代理对象,则会获取代理的目标对象实例.
 			this.initialMulticaster.addApplicationListener(listener);
 		}
 	}
@@ -85,9 +88,11 @@ public class EventPublishingRunListener implements SpringApplicationRunListener,
 	@Override
 	public void contextLoaded(ConfigurableApplicationContext context) {
 		for (ApplicationListener<?> listener : this.application.getListeners()) {
+			// 对listener优先设置applicationContext属性,普通bean则在实例化后才填充应用上下文属性.
 			if (listener instanceof ApplicationContextAware) {
 				((ApplicationContextAware) listener).setApplicationContext(context);
 			}
+			// 将springApplication中的监听器,设置到applicationContext中,refresh()过程中也会将对应事件推送给从spring.factories获取到的监听器们.
 			context.addApplicationListener(listener);
 		}
 		this.initialMulticaster.multicastEvent(new ApplicationPreparedEvent(this.application, this.args, context));
